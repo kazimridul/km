@@ -1,0 +1,19 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Pinned in exactly one place. Do not also add a .nvmrc — it can take precedence
+  # over NODE_VERSION and the two would drift.
+  NODE_VERSION = "24"
+
+# Single-page app: every path serves index.html so hash/deep links don't 404.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
