@@ -1,89 +1,99 @@
-import { Download, Mail, MapPin, Phone } from 'lucide-react'
+import { ArrowUpRight, Download, Mail, MapPin, Phone } from 'lucide-react'
+import { type Channel, contactChannels } from '../../data/contact'
 import { profile } from '../../data/profile'
 import { fallbackSocialIcon, socialIcons } from '../../data/socialIcons'
 import type { IconLike } from '../../data/types'
-import { Reveal } from '../ui/Reveal'
-import { SectionHeading } from '../ui/SectionHeading'
+import { useUi } from '../../store/ui'
+import { Reveal, SectionHeader } from '../ui/motion'
 
-type Card = { icon: IconLike; label: string; value: string; href: string; external?: boolean }
+const ICONS: Record<string, IconLike> = { email: Mail, cv: Download, phone: Phone }
 
+function iconFor(c: Channel) {
+  return ICONS[c.id] ?? socialIcons[c.label] ?? fallbackSocialIcon
+}
+
+/** The communication console. Hovering a channel wakes the 3D node and streams packets toward it. */
 export function Contact() {
-  const cards: Card[] = [
-    { icon: Mail, label: 'Email', value: profile.email, href: `mailto:${profile.email}` },
-    { icon: Phone, label: 'Phone', value: profile.phone, href: `tel:${profile.phoneHref}` },
-    // Only socials with a URL make it onto the page.
-    ...profile.socials
-      .filter((s) => s.url)
-      .map((s) => ({
-        icon: socialIcons[s.label] ?? fallbackSocialIcon,
-        label: s.label,
-        value: s.handle || s.url.replace(/^https?:\/\/(www\.)?/, ''),
-        href: s.url,
-        external: true,
-      })),
-  ]
+  const channels = contactChannels()
+  const hover = useUi((s) => s.contactHover)
+  const set = useUi((s) => s.set)
 
   return (
-    <section
-      id="contact"
-      className="scroll-mt-24 border-t border-paper-3 bg-paper-2/40 py-20 md:py-28 dark:border-white/6 dark:bg-ink-1/40"
-    >
-      <div className="mx-auto max-w-6xl px-5 sm:px-8">
-        <SectionHeading
-          index="06"
-          title="Get in touch"
-          subtitle="Open to data engineering and backend roles. The quickest way to reach me is email."
-        />
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          {cards.map((c, i) => (
-            <Reveal key={c.label} delay={i * 0.07}>
-              <a
-                href={c.href}
-                {...(c.external ? { target: '_blank', rel: 'noreferrer noopener' } : {})}
-                className="surface group flex items-center gap-4 p-6 transition-all hover:-translate-y-0.5 hover:border-brand/40"
-              >
-                <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand/10 text-brand transition-colors group-hover:bg-brand group-hover:text-ink-0">
-                  <c.icon className="size-5" />
-                </span>
-                <span className="min-w-0">
-                  <span className="block text-xs font-medium tracking-wider text-slate-400 uppercase dark:text-slate-500">
-                    {c.label}
-                  </span>
-                  <span className="mt-0.5 block truncate font-mono text-sm font-medium text-slate-900 dark:text-white">
-                    {c.value}
-                  </span>
-                </span>
-              </a>
-            </Reveal>
-          ))}
-        </div>
-
-        <Reveal delay={0.2}>
-          <div className="surface mt-8 flex flex-col items-center gap-5 p-8 text-center sm:p-10">
-            <MapPin className="size-5 text-slate-400" />
-            <p className="max-w-lg text-lg leading-relaxed font-medium text-slate-700 sm:text-xl dark:text-slate-200">
-              Based in {profile.location}, working with teams across time zones.
+    <section id="contact" className="relative flex min-h-[105svh] items-center py-28">
+      <div className="mx-auto w-full max-w-7xl px-5 sm:px-8">
+        <div className="scrim max-w-2xl lg:max-w-[48%]">
+          <SectionHeader index="07" label="Contact" stage="Let's build something" title="Let's build something together." />
+          <Reveal delay={0.1}>
+            <p className="mt-5 max-w-lg text-[15px] leading-relaxed text-slate-400">
+              Open to data engineering, backend engineering, cloud and data-driven projects.
             </p>
-            <div className="flex flex-wrap justify-center gap-3">
-              <a
-                href={`mailto:${profile.email}`}
-                className="inline-flex items-center gap-2 rounded-xl bg-linear-to-r from-brand to-accent px-5 py-3 text-sm font-semibold text-ink-0 shadow-lg shadow-brand/20 transition-transform hover:-translate-y-0.5"
-              >
-                <Mail className="size-4" />
-                Email me
-              </a>
-              <a
-                href={profile.resumePath}
-                download
-                className="inline-flex items-center gap-2 rounded-xl border border-paper-3 px-5 py-3 text-sm font-semibold text-slate-700 transition-colors hover:border-brand/50 hover:text-brand dark:border-white/12 dark:text-slate-200"
-              >
-                <Download className="size-4" />
-                Download Resume
-              </a>
+          </Reveal>
+
+          <Reveal delay={0.15}>
+            <div data-block-3d className="glass glass-blur mt-8 overflow-hidden rounded-2xl">
+              <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-3 font-mono text-[10px] tracking-[0.2em] uppercase">
+                <span className="text-slate-500">comm://kmh · connection terminal</span>
+                <span className="flex items-center gap-2 text-brand/80">
+                  <span className="size-1.5 rounded-full bg-brand" aria-hidden="true" />
+                  Channels open
+                </span>
+              </div>
+
+              <ul className="divide-y divide-white/[0.05]">
+                {channels.map((c) => {
+                  const Icon = iconFor(c)
+                  const on = hover === c.id
+                  return (
+                    <li key={c.id}>
+                      <a
+                        href={c.href}
+                        {...(c.external ? { target: '_blank', rel: 'noreferrer noopener' } : {})}
+                        {...(c.download ? { download: '' } : {})}
+                        onPointerEnter={() => set({ contactHover: c.id })}
+                        onPointerLeave={() => set({ contactHover: null })}
+                        onFocus={() => set({ contactHover: c.id })}
+                        onBlur={() => set({ contactHover: null })}
+                        className={`group grid grid-cols-[auto_1fr_auto] items-center gap-4 px-5 py-4 transition-colors ${
+                          on ? 'bg-brand/[0.06]' : 'hover:bg-white/[0.02]'
+                        }`}
+                      >
+                        <span
+                          className={`grid size-9 place-items-center rounded-lg border transition-colors ${
+                            on ? 'border-brand/50 bg-brand/15 text-brand' : 'border-white/10 text-slate-400'
+                          }`}
+                        >
+                          <Icon className="size-4" />
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block font-mono text-[10px] tracking-[0.2em] text-slate-500 uppercase">
+                            <span className="text-brand/60" aria-hidden="true">
+                              &gt;{' '}
+                            </span>
+                            {c.label}
+                          </span>
+                          <span className="mt-0.5 block truncate font-mono text-sm text-slate-100">{c.value}</span>
+                        </span>
+                        <span
+                          className={`flex items-center gap-1 font-mono text-[10px] font-semibold tracking-[0.18em] uppercase transition-colors ${
+                            on ? 'text-brand' : 'text-slate-600'
+                          }`}
+                        >
+                          <span className="hidden sm:inline">{c.download ? 'Download' : 'Connect'}</span>
+                          <ArrowUpRight className="size-3.5" aria-hidden="true" />
+                        </span>
+                      </a>
+                    </li>
+                  )
+                })}
+              </ul>
+
+              <div className="flex items-center gap-2 border-t border-white/[0.06] px-5 py-3 font-mono text-[11px] text-slate-500">
+                <MapPin className="size-3.5" aria-hidden="true" />
+                {profile.location}
+              </div>
             </div>
-          </div>
-        </Reveal>
+          </Reveal>
+        </div>
       </div>
     </section>
   )

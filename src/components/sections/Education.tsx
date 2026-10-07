@@ -1,61 +1,60 @@
-import { GraduationCap, Trophy } from 'lucide-react'
+import { GraduationCap } from 'lucide-react'
 import { achievement, education } from '../../data/education'
-import { Reveal } from '../ui/Reveal'
-import { SectionHeading } from '../ui/SectionHeading'
+import { CountUp, Reveal, SectionHeader } from '../ui/motion'
 
 export function Education() {
   return (
-    <section id="education" className="mx-auto max-w-6xl scroll-mt-24 px-5 py-20 sm:px-8 md:py-28">
-      <SectionHeading index="05" title="Education & Achievements" />
+    <section id="education" className="relative flex min-h-[110svh] items-center py-28">
+      <div className="mx-auto flex w-full max-w-7xl justify-end px-5 sm:px-8">
+        {/* Narrow screens: leave the top of the viewport to the trophy. */}
+        <div className="scrim w-full max-w-2xl pt-[26svh] lg:max-w-[46%] lg:pt-0">
+          <SectionHeader index="06" label="Education & Achievements" stage="The foundation" title="Foundations." />
 
-      <div className="grid gap-5 lg:grid-cols-2">
-        <Reveal className="space-y-5">
-          {education.map((c) => (
-            <div key={c.title} className="surface flex gap-4 p-6">
-              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand/10 text-brand">
-                <GraduationCap className="size-5" />
-              </span>
-              <div>
-                <h3 className="font-semibold">{c.title}</h3>
-                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{c.institution}</p>
-              </div>
-            </div>
-          ))}
-        </Reveal>
-
-        <Reveal delay={0.1}>
-          <div className="surface relative h-full overflow-hidden p-6">
-            <div aria-hidden className="absolute -top-16 -right-16 size-48 rounded-full bg-accent/10 blur-2xl" />
-            <div className="relative">
-              <span className="grid size-10 place-items-center rounded-xl bg-accent/10 text-accent">
-                <Trophy className="size-5" />
-              </span>
-              <h3 className="mt-4 font-semibold">
-                ICPC Dhaka Regional <span className="font-mono text-sm text-slate-400">{achievement.year}</span>
-              </h3>
-              <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
-                Competed in the International Collegiate Programming Contest regional round.
+          <Reveal delay={0.1}>
+            <div data-block-3d className="glass mt-8 rounded-2xl p-6 sm:p-8">
+              <p className="eyebrow">
+                {achievement.year} · {achievement.title}
               </p>
-
-              <dl className="mt-5 grid grid-cols-3 gap-px overflow-hidden rounded-xl border border-paper-3 bg-paper-3 dark:border-white/8 dark:bg-white/8">
-                {[
-                  { label: 'Rank', value: achievement.rank },
-                  { label: 'Team', value: achievement.team },
-                  { label: 'Coach', value: achievement.coach },
-                ].map((row) => (
-                  <div key={row.label} className="bg-paper-1 px-3 py-3.5 text-center dark:bg-ink-1">
-                    <dt className="text-[10px] font-medium tracking-wider text-slate-400 uppercase dark:text-slate-500">
-                      {row.label}
-                    </dt>
-                    <dd className="mt-1 truncate font-mono text-sm font-semibold text-slate-900 dark:text-white" title={row.value}>
-                      {row.value}
-                    </dd>
-                  </div>
-                ))}
+              <div className="mt-5 flex items-end gap-6">
+                <div>
+                  <p className="font-mono text-[10px] tracking-[0.25em] text-slate-500 uppercase">Rank</p>
+                  <CountUp
+                    value={Number(achievement.rank)}
+                    className="mt-1 block bg-gradient-to-b from-white to-brand/70 bg-clip-text font-mono text-7xl leading-none font-semibold tracking-tight text-transparent sm:text-8xl"
+                  />
+                </div>
+              </div>
+              <dl className="mt-6 grid grid-cols-2 gap-4 border-t border-white/[0.06] pt-5 font-mono text-xs">
+                <div>
+                  <dt className="text-[10px] tracking-[0.2em] text-slate-500 uppercase">Team</dt>
+                  <dd className="mt-1 text-slate-200">{achievement.team}</dd>
+                </div>
+                <div>
+                  <dt className="text-[10px] tracking-[0.2em] text-slate-500 uppercase">Coach</dt>
+                  <dd className="mt-1 text-slate-200">{achievement.coach}</dd>
+                </div>
               </dl>
             </div>
-          </div>
-        </Reveal>
+          </Reveal>
+
+          <ul className="mt-4 space-y-3">
+            {education.map((e, i) => (
+              <li key={e.title}>
+                <Reveal delay={0.15 + i * 0.08}>
+                  <div className="glass flex items-start gap-4 rounded-2xl p-5">
+                    <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-brand/20 bg-brand/[0.06] text-brand">
+                      <GraduationCap className="size-4.5" aria-hidden="true" />
+                    </span>
+                    <div>
+                      <h3 className="text-[15px] font-semibold">{e.title}</h3>
+                      <p className="mt-0.5 text-sm text-slate-400">{e.institution}</p>
+                    </div>
+                  </div>
+                </Reveal>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </section>
   )

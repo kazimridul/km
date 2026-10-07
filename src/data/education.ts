@@ -2,11 +2,11 @@ import type { Credential } from './types'
 
 export const education: Credential[] = [
   {
-    title: 'BSc in Computer Science & Engineering',
+    title: 'Bachelor of Science in Computer Science & Engineering',
     institution: 'Southeast University',
   },
   {
-    title: 'Diploma in Engineering — Computer Technology',
+    title: 'Diploma in Engineering: Computer Technology',
     institution: 'Dhaka Polytechnic Institute',
   },
 ]

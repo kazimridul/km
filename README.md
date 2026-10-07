@@ -1,6 +1,7 @@
 # Kazi Midul Hossen — Portfolio
 
-Single-page portfolio site. React 19 + TypeScript, Vite 8, Tailwind CSS v4, deployed on Netlify.
+Single-page portfolio built as one continuous 3D world. React 19 + TypeScript, Vite 8, Tailwind CSS v4,
+Three.js via React Three Fiber + drei, Motion for the 2D UI. Deployed on Netlify.
 
 ```bash
 npm install
@@ -10,6 +11,8 @@ npm run preview  # serve the production build locally
 npm run lint     # oxlint
 ```
 
+Append `?quality=high|medium|low|off` to the URL to force a rendering tier when testing.
+
 ---
 
 ## Editing your content
@@ -18,62 +21,36 @@ npm run lint     # oxlint
 
 | File | What's in it |
 |---|---|
-| `src/data/profile.ts` | Name, title, tagline, email, phone, location, **social links**, About paragraphs, the stat strip |
-| `src/data/skills.ts` | Skill groups and their icons |
-| `src/data/experience.ts` | Jobs, dates, and bullets (grouped by theme) |
-| `src/data/projects.ts` | The 8 projects — name, blurb, tech tags, category, detail bullets |
+| `src/data/profile.ts` | Name, headline, email, phone, location, **social links**, About copy, the four pillars, count-up stats |
+| `src/data/experience.ts` | Roles, dates, milestone year, collapsed-view chips, and the full grouped bullets |
+| `src/data/projects.ts` | The 8 projects — blurb, filter tags, tech, the `flow` chain drawn in 3D, detail bullets |
+| `src/data/stack.ts` | Technology galaxy clusters, one-line descriptions, and relationship links |
+| `src/data/heroNetwork.ts` | Hero 3D nodes (position, tooltip text) and the data flows between them |
 | `src/data/education.ts` | Degrees and the ICPC result |
-| `src/data/sections.ts` | Section order and nav labels |
+| `src/data/contact.ts` | Contact channels, derived from `profile.ts` |
+| `src/data/sections.ts` | Section order, nav labels and the story-stage captions |
 
-### 👉 First thing to do: add your GitHub and LinkedIn
+### 👉 First thing to do: add your GitHub
 
-In `src/data/profile.ts`:
-
-```ts
-socials: [
-  { label: 'GitHub',   url: 'https://github.com/your-username',      handle: '@your-username' },
-  { label: 'LinkedIn', url: 'https://linkedin.com/in/your-profile',  handle: 'your-profile' },
-],
-```
-
-They're currently empty strings. **Any social with an empty `url` is skipped everywhere on the site**, so
-nothing looks broken until you fill them in — the icons just appear once you do.
+In `src/data/profile.ts`, fill in the GitHub `url` and `handle`. **Any social with an empty `url` is skipped
+everywhere** — once it's set, GitHub appears in the contact console *and* as a destination node around the 3D
+communication terminal.
 
 ### Adding a project
 
-Append to the array in `src/data/projects.ts`. `category` must be one of `GCP | AWS | Azure | Backend`
-(the filter pills and their counts update on their own):
-
-```ts
-{
-  id: 'unique-slug',
-  name: 'Project Name',
-  client: 'Client Name',        // optional
-  blurb: 'One sentence shown on the card.',
-  category: 'GCP',
-  tech: ['BigQuery', 'dbt'],    // first 4 show on the card, rest collapse into "+N"
-  bullets: ['What you did.'],   // shown in the modal
-}
-```
-
-To add a new category, add it to `ProjectCategory` in `src/data/types.ts`, to `projectCategories` in
-`projects.ts`, and give it a colour in `src/data/categoryStyles.ts`.
+Append to the array in `src/data/projects.ts`. `tags` drive the filters (`data | backend | cloud | automation`);
+`flow` is the ordered chain the 3D universe draws from the panel through its technologies — every entry must
+also be in `tech`. The 3D layout re-flows automatically for any number of projects.
 
 ### Replacing the resume
 
 Drop the new PDF in `public/` and point `profile.resumePath` at it. The current one is
 `public/Kazi-Midul-Hossen-Resume.pdf`.
 
-### Replacing the photo
+### Colours
 
-Replace `src/assets/profile.png`. It's a square image with a transparent circular mask — any square
-image works, it's clipped to a circle in the hero.
-
-### Colours and fonts
-
-Everything is in the `@theme` block at the top of `src/index.css`. Changing `--color-brand` there
-re-tints the whole site — the gradients, chips, links, buttons and the pipeline animation all read
-from it.
+The 2D palette is the `@theme` block at the top of `src/index.css`; the 3D palette is `C` in
+`src/three/shared.ts`. Keep them in step.
 
 ---
 
@@ -111,17 +88,28 @@ HTTPS is provisioned automatically.
 
 ---
 
+## How the 3D works
+
+- **One canvas, one world.** `src/three/World.tsx` mounts a single fixed WebGL canvas behind the HTML. Each
+  section is a *station* placed along −Z (`src/three/layout.ts`); the camera flies between them.
+- **Scroll drives the camera.** `src/lib/scroll.ts` turns scroll position into a fractional station value;
+  `CameraRig.tsx` maps it through keyframes with damping, plus pointer parallax. The Experience rail keys off
+  the real card positions (`data-rail`), so expanding a role re-times the flight.
+- **Stations only render near the camera** (`isStationLive`); neighbours stay faintly visible in the fog.
+- **Lazy + adaptive.** The 3D chunk loads after first paint. `src/lib/device.ts` picks a tier (particle counts,
+  DPR); a runtime FPS watchdog lowers DPR and, if frames stay slow (e.g. software WebGL), retires the 3D for the
+  static backdrop.
+- **Reduced motion:** no flight, parallax, rotation or custom cursor — the camera cuts between sections and the
+  canvas only redraws on change. All content is real HTML regardless.
+- Pointer events reach the canvas through `#root`; anything matching `a, button, [data-block-3d]` blocks 3D
+  hover so UI never triggers objects behind it.
+
 ## Notes on the stack
 
 - **No `tailwind.config.js`** — Tailwind v4 doesn't use one. Theme tokens are the `@theme` block in
-  `src/index.css`; dark mode is the `@custom-variant dark` line just above it.
-- **Dark mode** is class-based on `<html>`. The small inline script in `index.html` resolves the theme
-  before first paint so the page never flashes light. Dark is the default.
+  `src/index.css`.
+- **Dark only** — the design is built around the dark 3D scene.
 - **Motion** is the `motion` package (formerly Framer Motion), imported from `motion/react`.
-- **Reduced motion** is respected: the CSS block at the bottom of `index.css` neutralises transitions,
-  and `PipelineGraph` / `Reveal` check `useReducedMotion()` and drop their animated nodes entirely
-  (the pipeline uses SMIL, which CSS cannot stop).
-- **Icons** come from three places because no single set covers everything — `lucide-react` for UI
-  glyphs, `react-icons/si` for most brand logos, and `react-icons/fa6` + `react-icons/vsc` for AWS,
-  Azure, GitHub and LinkedIn, which Simple Icons dropped. dbt, OpenAI and the SQL glyph are
-  hand-drawn in `src/components/ui/BrandIcons.tsx`.
+- **3D labels** use the JetBrains Mono `.woff` from `@fontsource` (troika can't read woff2), so no font is
+  fetched from a CDN at runtime.
+- **Icons**: `lucide-react` for UI glyphs, `react-icons/fa6` for GitHub and LinkedIn.

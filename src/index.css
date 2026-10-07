@@ -1,125 +1,193 @@
 @import 'tailwindcss';
 
-/* Class-based dark mode. Tailwind v4 has no JS config — this is the whole setup. */
-@custom-variant dark (&:where(.dark, .dark *));
-
 @theme {
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
 
-  /* Brand. Defining these here is what gives us bg-brand / text-brand / border-brand. */
-  --color-brand: #22d3ee;
-  --color-brand-deep: #0e7490;
-  --color-accent: #a78bfa;
-  --color-accent-deep: #6d28d9;
+  /* Restrained cyan/blue on near-black navy. Matches the 3D palette in three/shared.ts. */
+  --color-brand: #5fd4f4;
+  --color-brand-deep: #2b9cc4;
+  --color-signal: #5b8cff;
+  --color-ice: #e2f5ff;
 
-  /* Surface ramp — ink-0 is the page, ink-3 the lightest raised card. */
-  --color-ink-0: #070b12;
-  --color-ink-1: #0b111c;
-  --color-ink-2: #111a29;
-  --color-ink-3: #1a2537;
+  --color-ink-0: #03060c;
+  --color-ink-1: #070d18;
+  --color-ink-2: #0b1422;
+  --color-ink-3: #13203a;
 
-  /* Light-mode counterparts. */
-  --color-paper-0: #f7f9fc;
-  --color-paper-1: #ffffff;
-  --color-paper-2: #eef2f8;
-  --color-paper-3: #e2e8f2;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
 
-  --radius-xl2: 1.25rem;
+@property --border-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
 }
 
 @layer base {
   html {
     scroll-behavior: smooth;
-    /* Sticky nav is 4rem — keep anchored sections from hiding underneath it. */
     scroll-padding-top: 5rem;
     -webkit-text-size-adjust: 100%;
+    background: var(--color-ink-0);
+    color-scheme: dark;
+    /* `clip`, not `hidden`: mobile browsers widen the layout viewport for content
+       that `hidden` merely hides, which shoves fixed UI off-screen. */
+    overflow-x: clip;
   }
 
   body {
-    @apply bg-paper-0 text-slate-700 antialiased;
-    @apply dark:bg-ink-0 dark:text-slate-300;
+    @apply bg-ink-0 text-slate-300 antialiased;
     font-family: var(--font-sans);
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   h1,
   h2,
   h3,
   h4 {
-    @apply text-slate-900 dark:text-white;
+    @apply text-white;
     text-wrap: balance;
   }
 
   ::selection {
-    background: color-mix(in oklab, var(--color-brand) 32%, transparent);
-    color: inherit;
+    background: color-mix(in oklab, var(--color-brand) 30%, transparent);
+    color: #fff;
   }
 
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-brand;
   }
 
-  /* Scrollbar, dark side only — the light theme keeps the native one. */
-  .dark ::-webkit-scrollbar {
+  ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
   }
-  .dark ::-webkit-scrollbar-track {
+  ::-webkit-scrollbar-track {
     background: var(--color-ink-0);
   }
-  .dark ::-webkit-scrollbar-thumb {
+  ::-webkit-scrollbar-thumb {
     background: var(--color-ink-3);
     border-radius: 9999px;
-  }
-  .dark ::-webkit-scrollbar-thumb:hover {
-    background: #2b3a52;
   }
 }
 
 @layer components {
-  /* One card treatment, used by every section, so surfaces stay consistent. */
-  .surface {
-    @apply rounded-2xl border border-paper-3 bg-paper-1;
-    @apply dark:border-white/8 dark:bg-ink-1;
+  /* Translucent dark glass with a hairline border. `glass-blur` adds the frost —
+     use it sparingly: every blurred layer is re-sampled each WebGL frame. */
+  .glass {
+    background: linear-gradient(180deg, rgb(13 22 38 / 0.62), rgb(7 13 24 / 0.55));
+    border: 1px solid rgb(148 200 255 / 0.09);
+    box-shadow:
+      0 1px 0 0 rgb(255 255 255 / 0.04) inset,
+      0 24px 48px -24px rgb(0 0 0 / 0.7);
+  }
+  .glass-blur {
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    backdrop-filter: blur(14px) saturate(140%);
+  }
+
+  .eyebrow {
+    @apply font-mono text-[11px] font-medium tracking-[0.22em] text-brand/90 uppercase;
   }
 
   .chip {
-    @apply inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium;
-    @apply border-paper-3 bg-paper-2 text-slate-600;
-    @apply dark:border-white/8 dark:bg-white/4 dark:text-slate-300;
+    @apply inline-flex items-center gap-1.5 rounded-md border border-white/8 bg-white/[0.03] px-2 py-1 text-[11px] text-slate-300;
     font-family: var(--font-mono);
   }
 
-  /* Cyan → violet wash used for the name, section numerals and key stats. */
-  .text-gradient {
-    background-image: linear-gradient(100deg, var(--color-brand), var(--color-accent));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+  .hairline {
+    background: linear-gradient(90deg, transparent, rgb(148 200 255 / 0.18), transparent);
+    height: 1px;
   }
 
-  .grid-backdrop {
-    background-image:
-      linear-gradient(to right, color-mix(in oklab, currentColor 8%, transparent) 1px, transparent 1px),
-      linear-gradient(to bottom, color-mix(in oklab, currentColor 8%, transparent) 1px, transparent 1px);
-    background-size: 56px 56px;
+  /* Primary CTA: solid ice with a soft cyan halo on hover. */
+  .btn-primary {
+    @apply relative inline-flex items-center gap-2 rounded-xl px-5 py-3 font-mono text-xs font-semibold tracking-[0.16em] text-ink-0 uppercase transition-[box-shadow,transform] duration-300;
+    background: linear-gradient(180deg, #f2fbff, #c9ecfa);
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.4) inset, 0 8px 24px -10px rgb(95 212 244 / 0.5);
+  }
+  .btn-primary:hover {
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.6) inset, 0 10px 34px -8px rgb(95 212 244 / 0.7);
+  }
+
+  /* Secondary CTA: glass with an animated conic border on hover. */
+  .btn-ghost {
+    @apply relative inline-flex items-center gap-2 rounded-xl px-5 py-3 font-mono text-xs font-semibold tracking-[0.16em] text-slate-100 uppercase;
+    background: rgb(10 18 32 / 0.6);
+    border: 1px solid rgb(148 200 255 / 0.16);
+    isolation: isolate;
+  }
+  .btn-ghost::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(from var(--border-angle), transparent 0 70%, var(--color-brand) 85%, transparent 100%);
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: -1;
+  }
+  .btn-ghost:hover::before,
+  .btn-ghost:focus-visible::before {
+    opacity: 1;
+    animation: border-spin 2.4s linear infinite;
   }
 }
 
-@layer utilities {
+@keyframes border-spin {
+  to {
+    --border-angle: 360deg;
+  }
+}
+
+/* Soft dark wash behind a text column so copy stays readable over the scene. */
+.scrim {
+  position: relative;
+  isolation: isolate;
+}
+.scrim::before {
+  content: '';
+  position: absolute;
+  inset: -12% -6%;
+  z-index: -1;
+  background: radial-gradient(closest-side, rgb(3 6 12 / 0.72), rgb(3 6 12 / 0.35) 60%, transparent);
+  pointer-events: none;
+}
+
+/* Narrow screens: copy overlays the scene full-width, so cards need more body. */
+@media (max-width: 1023px) {
   .glass {
-    background-color: color-mix(in oklab, var(--color-paper-0) 72%, transparent);
-    -webkit-backdrop-filter: blur(14px) saturate(160%);
-    backdrop-filter: blur(14px) saturate(160%);
-  }
-  .dark .glass {
-    background-color: color-mix(in oklab, var(--color-ink-0) 68%, transparent);
+    background: linear-gradient(180deg, rgb(10 18 32 / 0.9), rgb(6 11 21 / 0.88));
   }
 }
 
-/* Everything motion-driven is opt-out, not opt-in. Reveals below resolve to their
-   final state and the pipeline animation stops rather than reflowing. */
+@media (min-width: 1024px) {
+  .scrim::before {
+    inset: -12% -18%;
+  }
+}
+
+/* Custom cursor hides the system one only while it is active. */
+html.has-cursor,
+html.has-cursor * {
+  cursor: none !important;
+}
+
+/* Horizontal project carousel on small screens. */
+.snap-carousel {
+  scrollbar-width: none;
+}
+.snap-carousel::-webkit-scrollbar {
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

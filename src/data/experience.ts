@@ -1,19 +1,43 @@
 import type { Role } from './types'
 
 /**
- * Bullets are verbatim from the resume. The Be Data Solutions role has 22 of them,
- * so they're grouped by theme rather than dumped as one list.
+ * Bullets are verbatim from the resume. Ordered chronologically because the 3D
+ * rail runs from 2020 into the distance.
  */
 export const roles: Role[] = [
+  {
+    company: 'Naztech Inc',
+    title: 'Junior Software Engineer',
+    period: 'Mar 2020 — Oct 2022',
+    year: '2020',
+    highlights: ['Spring Boot', 'Spring Email', 'PDFBox', 'MS SQL Server', 'Kafka', 'Redis'],
+    focus: ['Real-time SMS pipelines', 'Job data extraction', 'Document automation', 'Full SDLC'],
+    groups: [
+      {
+        label: 'Responsibilities',
+        bullets: [
+          'Automated document handling processes, significantly reducing manual effort and improving operational efficiency.',
+          'Designed and implemented backend services using Spring Boot, integrated email workflows with Spring Email, and processed documents with PDFBox.',
+          'Managed relational data storage with MS SQL Server and ensured data consistency across the system.',
+          'Developed a robust data pipeline to deliver real-time SMS notifications for banking transactions.',
+          'Built scalable pipelines for extracting and analyzing job statistics from multiple sources.',
+          'Collaborated across all phases of the Software Development Life Cycle (SDLC), including design, development, testing, and deployment.',
+        ],
+      },
+    ],
+  },
   {
     company: 'Be Data Solutions Limited',
     title: 'Sr. Data and Software Engineer',
     period: 'Oct 2022 — Present',
+    year: '2022',
+    highlights: ['DBT', 'BigQuery', 'Airflow', 'Datastream', 'GitHub Actions', 'Spring Boot', 'Terraform', 'AWS', 'Azure'],
+    focus: ['ELT & ETL pipelines', 'API ingestion into BigQuery', 'Data warehouses', 'Backend APIs', 'Cloud infrastructure'],
     groups: [
       {
         label: 'Data platform & pipelines',
         bullets: [
-          'Built ELT pipelines using dbt for scalable data transformation and modeling.',
+          'Built ELT pipelines using DBT for scalable data transformation and modeling.',
           'Developed API-based data ingestion pipelines to pull data into BigQuery.',
           'Used Apache Airflow for workflow orchestration, scheduling, and monitoring of data pipelines.',
           'Used Google Cloud Datastream to synchronize data from PostgreSQL to BigQuery.',
@@ -45,24 +69,6 @@ export const roles: Role[] = [
           'Developed backend APIs, integrated OpenAI and Auth0, deployed on cloud with container management.',
           'Designed Spring Boot backend, implemented AWS Cognito auth, deployed on EC2, and used S3/SQL Server.',
           'Full-stack development using Anvil; handled both frontend and backend with Anvil’s database.',
-        ],
-      },
-    ],
-  },
-  {
-    company: 'Naztech Inc',
-    title: 'Junior Software Engineer',
-    period: 'Mar 2020 — Oct 2022',
-    groups: [
-      {
-        label: 'Responsibilities',
-        bullets: [
-          'Automated document handling processes, significantly reducing manual effort and improving operational efficiency.',
-          'Designed and implemented backend services using Spring Boot, integrated email workflows with Spring Email, and processed documents with PDFBox.',
-          'Managed relational data storage with MS SQL Server and ensured data consistency across the system.',
-          'Developed a robust data pipeline to deliver real-time SMS notifications for banking transactions.',
-          'Built scalable pipelines for extracting and analyzing job statistics from multiple sources.',
-          'Collaborated across all phases of the Software Development Life Cycle (SDLC), including design, development, testing, and deployment.',
         ],
       },
     ],

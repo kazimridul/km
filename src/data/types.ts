@@ -1,9 +1,5 @@
 import type { ComponentType } from 'react'
 
-/**
- * Loose on purpose: react-icons' `IconType` and our hand-rolled brand SVGs both
- * satisfy this, so the two can be mixed freely in one skill list.
- */
 export type IconLike = ComponentType<{ className?: string }>
 
 export type Social = {
@@ -13,40 +9,52 @@ export type Social = {
   handle?: string
 }
 
-export type Skill = {
-  name: string
-  icon?: IconLike
-}
-
-export type SkillGroup = {
-  title: string
-  /** Flat list of skills, or provider-subdivided (used by the Cloud group). */
-  skills?: Skill[]
-  subgroups?: { title: string; skills: Skill[] }[]
-}
-
 export type Role = {
   company: string
   title: string
   period: string
+  /** Milestone year shown on the 3D rail. */
+  year: string
+  /** Short tech chips shown before the role is expanded. */
+  highlights: string[]
+  /** One-line focus areas shown before the role is expanded. */
+  focus: string[]
   /** Bullets are grouped so a 22-item list stays scannable. */
   groups: { label: string; bullets: string[] }[]
 }
 
-export type ProjectCategory = 'GCP' | 'AWS' | 'Azure' | 'Backend'
+/** Filter buckets for the project universe. A project can sit in several. */
+export type ProjectTag = 'data' | 'backend' | 'cloud' | 'automation'
 
 export type Project = {
   id: string
   name: string
   client?: string
   blurb: string
-  category: ProjectCategory
+  /** Primary platform, shown as the badge. */
+  platform: 'GCP' | 'AWS' | 'Azure' | 'Backend'
+  tags: ProjectTag[]
   tech: string[]
+  /**
+   * The ordered chain the 3D universe draws from the project panel through its
+   * technologies. Every entry must also appear in `tech`.
+   */
+  flow: string[]
   bullets: string[]
 }
 
 export type Credential = {
   title: string
   institution: string
-  detail?: string
+}
+
+export type StackTech = {
+  name: string
+  blurb: string
+}
+
+export type StackCluster = {
+  id: string
+  title: string
+  techs: StackTech[]
 }

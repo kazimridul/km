@@ -1,153 +1,173 @@
-import { motion } from 'motion/react'
-import { ArrowDown, Download, Mail } from 'lucide-react'
-import avatar from '../../assets/profile.png'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { ArrowDown, ArrowRight, ArrowUpRight, Download, X } from 'lucide-react'
+import { useEffect } from 'react'
+import { heroNodeById } from '../../data/heroNetwork'
 import { profile, stats } from '../../data/profile'
-import { fallbackSocialIcon, socialIcons } from '../../data/socialIcons'
-import { PipelineGraph } from '../ui/PipelineGraph'
+import { useUi } from '../../store/ui'
+import { CountUp, Magnetic, WordReveal } from '../ui/motion'
+
+const EASE = [0.16, 1, 0.3, 1] as const
 
 export function Hero() {
-  // Socials with no URL yet are skipped entirely rather than rendered dead.
-  const socials = profile.socials.filter((s) => s.url)
+  const reduced = useReducedMotion()
+  const fade = (delay: number) =>
+    reduced
+      ? {}
+      : { initial: { opacity: 0, y: 18 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.9, delay, ease: EASE } }
 
   return (
-    <section id="top" className="relative overflow-hidden pt-28 pb-16 sm:pt-32 md:pb-24">
-      {/* Backdrop: faint grid + two colour blooms */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-0 text-slate-900 grid-backdrop opacity-40 dark:text-white dark:opacity-100" />
-        <div className="absolute -top-32 -left-24 size-96 rounded-full bg-brand/12 blur-3xl" />
-        <div className="absolute top-20 -right-24 size-96 rounded-full bg-accent/12 blur-3xl" />
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-linear-to-b from-transparent to-paper-0 dark:to-ink-0" />
-      </div>
+    <section id="top" className="relative flex min-h-[100svh] flex-col justify-end pb-10 lg:justify-center lg:pb-0">
+      <div className="mx-auto w-full max-w-7xl px-5 sm:px-8">
+        {/* Narrow screens: the 3D network takes the top of the viewport, copy sits below it. */}
+        <div className="h-[36svh] lg:hidden" aria-hidden="true" />
 
-      <div className="mx-auto max-w-6xl px-5 sm:px-8">
-        <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_1fr] lg:gap-10">
-          {/* Left — identity */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <div className="flex items-center gap-4">
-              <img
-                src={avatar}
-                alt={profile.name}
-                width={72}
-                height={72}
-                className="size-18 rounded-full ring-2 ring-brand/40 ring-offset-4 ring-offset-paper-0 dark:ring-offset-ink-0"
-              />
-              <div>
-                <span className="chip border-brand/30! bg-brand/10! text-brand!">
-                  <span className="relative flex size-1.5">
-                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-brand opacity-70" />
-                    <span className="relative inline-flex size-1.5 rounded-full bg-brand" />
-                  </span>
-                  {profile.title}
-                </span>
-                <p className="mt-2 font-mono text-xs text-slate-500 dark:text-slate-400">{profile.location}</p>
-              </div>
-            </div>
+        <div className="scrim max-w-2xl lg:max-w-[46%]">
+          <motion.p {...fade(0.1)} className="eyebrow flex items-center gap-3">
+            <span className="h-px w-8 bg-brand/50" />
+            {profile.eyebrow}
+          </motion.p>
 
-            <h1 className="mt-7 text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
-              Kazi Midul <span className="text-gradient">Hossen</span>
-            </h1>
+          <WordReveal
+            as="h1"
+            immediate
+            delay={0.2}
+            text={profile.name}
+            className="mt-6 bg-gradient-to-b from-white via-white to-slate-400 bg-clip-text text-[2.6rem] leading-[1.02] font-semibold tracking-[-0.03em] text-transparent sm:text-6xl xl:text-7xl"
+          />
 
-            <p className="mt-5 max-w-xl text-lg leading-relaxed text-slate-600 dark:text-slate-400">
-              {profile.tagline}
-            </p>
-
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <a
-                href={profile.resumePath}
-                download
-                className="inline-flex items-center gap-2 rounded-xl bg-linear-to-r from-brand to-accent px-5 py-3 text-sm font-semibold text-ink-0 shadow-lg shadow-brand/20 transition-transform hover:-translate-y-0.5"
-              >
-                <Download className="size-4" />
-                Download Resume
-              </a>
-              <a
-                href="#contact"
-                className="inline-flex items-center gap-2 rounded-xl border border-paper-3 bg-paper-1 px-5 py-3 text-sm font-semibold text-slate-700 transition-colors hover:border-brand/50 hover:text-brand dark:border-white/12 dark:bg-white/4 dark:text-slate-200"
-              >
-                Get in touch
-              </a>
-
-              <div className="flex items-center gap-1.5 sm:ml-2">
-                <a
-                  href={`mailto:${profile.email}`}
-                  aria-label="Email"
-                  title={profile.email}
-                  className="grid size-10 place-items-center rounded-xl border border-paper-3 text-slate-500 transition-colors hover:border-brand/50 hover:text-brand dark:border-white/12 dark:text-slate-400"
-                >
-                  <Mail className="size-4.5" />
-                </a>
-                {socials.map((s) => {
-                  const Icon = socialIcons[s.label] ?? fallbackSocialIcon
-                  return (
-                    <a
-                      key={s.label}
-                      href={s.url}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                      aria-label={s.label}
-                      className="grid size-10 place-items-center rounded-xl border border-paper-3 text-slate-500 transition-colors hover:border-brand/50 hover:text-brand dark:border-white/12 dark:text-slate-400"
-                    >
-                      <Icon className="size-4.5" />
-                    </a>
-                  )
-                })}
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Right — the pipeline */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-            className="surface relative p-5 shadow-xl shadow-slate-900/5 dark:shadow-black/40"
-          >
-            <div className="mb-3 flex items-center gap-1.5">
-              <span className="size-2.5 rounded-full bg-red-400/70" />
-              <span className="size-2.5 rounded-full bg-amber-400/70" />
-              <span className="size-2.5 rounded-full bg-emerald-400/70" />
-              <span className="ml-2 font-mono text-[11px] text-slate-400 dark:text-slate-500">
-                daily_ingest.dag
+          <motion.p {...fade(0.5)} className="mt-6 text-lg leading-snug font-light text-slate-200 sm:text-2xl">
+            {profile.headline.map((line, i) => (
+              <span key={i} className="block">
+                {line}
               </span>
-            </div>
-            <PipelineGraph className="w-full" />
+            ))}
+          </motion.p>
+
+          <motion.p {...fade(0.65)} className="mt-5 max-w-lg text-sm leading-relaxed text-slate-400 sm:text-[15px]">
+            {profile.summary}
+          </motion.p>
+
+          <motion.div {...fade(0.8)} className="mt-8 flex flex-wrap items-center gap-3">
+            <Magnetic>
+              <a href="#projects" className="btn-primary">
+                View my work
+                <ArrowRight className="size-3.5" aria-hidden="true" />
+              </a>
+            </Magnetic>
+            <Magnetic>
+              <a href={profile.resumePath} download className="btn-ghost">
+                <Download className="size-3.5" aria-hidden="true" />
+                Download CV
+              </a>
+            </Magnetic>
+            <a
+              href="#contact"
+              className="group ml-1 inline-flex items-center gap-1.5 px-2 py-3 font-mono text-xs font-semibold tracking-[0.16em] text-brand uppercase"
+            >
+              Let's connect
+              <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
+            </a>
           </motion.div>
-        </div>
 
-        {/* Stat strip */}
-        <motion.dl
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-14 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-paper-3 bg-paper-3 sm:grid-cols-4 dark:border-white/8 dark:bg-white/8"
-        >
-          {stats.map((s) => (
-            <div key={s.label} className="bg-paper-1 px-5 py-6 text-center dark:bg-ink-1">
-              <dt className="sr-only">{s.label}</dt>
-              <dd>
-                <span className="block font-mono text-3xl font-bold text-gradient">{s.value}</span>
-                <span className="mt-1 block text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
-                  {s.label}
-                </span>
-              </dd>
-            </div>
-          ))}
-        </motion.dl>
-
-        <div className="mt-12 flex justify-center">
-          <a
-            href="#about"
-            aria-label="Scroll to About"
-            className="grid size-10 place-items-center rounded-full border border-paper-3 text-slate-400 transition-colors hover:border-brand/50 hover:text-brand dark:border-white/10"
-          >
-            <ArrowDown className="size-4 animate-bounce" />
-          </a>
+          <motion.dl {...fade(0.95)} className="mt-12 grid max-w-md grid-cols-3 gap-6">
+            {stats.map((s) => (
+              <div key={s.label}>
+                <dt className="sr-only">{s.label}</dt>
+                <dd>
+                  <CountUp value={s.value} suffix={s.suffix} className="block font-mono text-2xl font-semibold text-ice sm:text-3xl" />
+                  <span className="mt-1.5 block font-mono text-[10px] tracking-[0.18em] text-slate-500 uppercase">
+                    {s.label}
+                  </span>
+                </dd>
+              </div>
+            ))}
+          </motion.dl>
         </div>
       </div>
+
+      <HeroInspector />
+
+      <a
+        href="#about"
+        aria-label="Scroll to About"
+        className="absolute bottom-6 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 font-mono text-[10px] tracking-[0.25em] text-slate-500 uppercase transition-colors hover:text-brand lg:flex"
+      >
+        Scroll
+        <ArrowDown className="size-3.5 animate-bounce" aria-hidden="true" />
+      </a>
     </section>
+  )
+}
+
+/**
+ * Detail card for the node the visitor clicked in the 3D platform. Clicking
+ * is never required — this just rewards exploration.
+ */
+function HeroInspector() {
+  const focus = useUi((s) => s.heroFocus)
+  const set = useUi((s) => s.set)
+  const worldReady = useUi((s) => s.worldReady)
+  const node = focus ? heroNodeById[focus] : null
+
+  useEffect(() => {
+    if (!focus) return
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && set({ heroFocus: null })
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [focus, set])
+
+  return (
+    <div className="pointer-events-none absolute right-5 bottom-8 left-5 sm:left-auto sm:w-80 lg:right-10 lg:bottom-12">
+      <AnimatePresence mode="wait">
+        {node ? (
+          <motion.div
+            key={node.id}
+            data-block-3d
+            role="status"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            transition={{ duration: 0.35, ease: EASE }}
+            className="glass glass-blur pointer-events-auto rounded-2xl p-5"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="eyebrow !text-[10px]">Focused node · {node.label}</p>
+                <p className="mt-2 text-base font-semibold text-white">{node.title}</p>
+                <p className="mt-1 text-sm text-slate-400">{node.description}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => set({ heroFocus: null })}
+                aria-label="Close node details"
+                className="grid size-8 shrink-0 place-items-center rounded-lg border border-white/10 text-slate-400 hover:text-white"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+            <ul className="mt-4 flex flex-wrap gap-1.5">
+              {node.tech.map((t) => (
+                <li key={t} className="chip">
+                  {t}
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+        ) : (
+          worldReady && (
+            <motion.p
+              key="hint"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ delay: 1.6, duration: 0.8 }}
+              className="hidden text-right font-mono text-[10px] tracking-[0.22em] whitespace-nowrap text-slate-500 uppercase lg:block"
+            >
+              Hover a node to inspect · click to focus
+            </motion.p>
+          )
+        )}
+      </AnimatePresence>
+    </div>
   )
 }

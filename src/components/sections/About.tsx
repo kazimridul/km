@@ -1,39 +1,56 @@
-import { Cloud, Database, Server, Workflow } from 'lucide-react'
-import { about } from '../../data/profile'
-import { Reveal } from '../ui/Reveal'
-import { SectionHeading } from '../ui/SectionHeading'
-
-const PILLARS = [
-  { icon: Workflow, title: 'Orchestration', body: 'Airflow DAGs and dbt models that keep transformations scheduled, tested and observable.' },
-  { icon: Database, title: 'Warehousing', body: 'BigQuery and SQL Server warehouses designed so analytics queries stay fast as volume grows.' },
-  { icon: Cloud, title: 'Multi-cloud', body: 'Production workloads across GCP, AWS and Azure, provisioned with Terraform and shipped by CI/CD.' },
-  { icon: Server, title: 'Backend', body: 'Spring Boot services with Spring Security, Cognito/Auth0 auth and containerised deployments.' },
-]
+import { about, aboutQuote, pillars } from '../../data/profile'
+import { useUi } from '../../store/ui'
+import { Reveal, SectionHeader } from '../ui/motion'
 
 export function About() {
+  const hover = useUi((s) => s.pillarHover)
+  const set = useUi((s) => s.set)
+
   return (
-    <section id="about" className="mx-auto max-w-6xl scroll-mt-24 px-5 py-20 sm:px-8 md:py-28">
-      <SectionHeading index="01" title="About" subtitle="Where the data work and the software engineering meet." />
+    <section id="about" className="relative flex min-h-[115svh] items-center py-28">
+      <div className="mx-auto w-full max-w-7xl px-5 sm:px-8">
+        <div className="scrim max-w-2xl lg:max-w-[46%]">
+          <SectionHeader
+            index="02"
+            label="About"
+            stage="Data is processed"
+            title="Systems that move, process, secure and transform data."
+          />
 
-      <div className="grid gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
-        <Reveal className="space-y-5">
-          {about.map((para) => (
-            <p key={para.slice(0, 32)} className="text-base leading-relaxed text-slate-600 sm:text-lg dark:text-slate-400">
-              {para}
-            </p>
-          ))}
-        </Reveal>
+          <div className="mt-8 space-y-5 text-[15px] leading-relaxed text-slate-300 sm:text-base">
+            {about.map((p, i) => (
+              <Reveal key={i} delay={0.08 * i}>
+                <p>{p}</p>
+              </Reveal>
+            ))}
+          </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          {PILLARS.map((p, i) => (
-            <Reveal key={p.title} delay={i * 0.08}>
-              <div className="surface h-full p-5 transition-colors hover:border-brand/40">
-                <p.icon className="size-5 text-brand" />
-                <h3 className="mt-3 text-sm font-semibold">{p.title}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-slate-500 dark:text-slate-400">{p.body}</p>
-              </div>
-            </Reveal>
-          ))}
+          <Reveal delay={0.15}>
+            <blockquote className="mt-8 border-l border-brand/40 pl-5 text-sm leading-relaxed text-slate-400 italic">
+              “{aboutQuote}”
+            </blockquote>
+          </Reveal>
+
+          {/* Legend for the 3D diagram — hovering a pillar lights it up in the scene. */}
+          <ul className="mt-10 grid grid-cols-2 gap-3" aria-label="Engineering pillars">
+            {pillars.map((p, i) => (
+              <li key={p.id}>
+                <Reveal delay={0.06 * i} className="h-full">
+                  <div
+                    data-block-3d
+                    onPointerEnter={() => set({ pillarHover: p.id })}
+                    onPointerLeave={() => set({ pillarHover: null })}
+                    className={`glass h-full rounded-xl p-4 transition-[border-color,transform] duration-300 ${
+                      hover === p.id ? '-translate-y-0.5 !border-brand/40' : ''
+                    }`}
+                  >
+                    <p className="font-mono text-[11px] font-semibold tracking-[0.2em] text-ice uppercase">{p.title}</p>
+                    <p className="mt-2 font-mono text-[11px] leading-relaxed text-slate-400">{p.items.join(' · ')}</p>
+                  </div>
+                </Reveal>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </section>

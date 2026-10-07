@@ -1,27 +1,26 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { Menu, X } from 'lucide-react'
+import { Download, Menu, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { profile } from '../../data/profile'
 import { sectionIds, sections } from '../../data/sections'
 import { useActiveSection } from '../../hooks/useActiveSection'
 import { useLockBodyScroll } from '../../hooks/useLockBodyScroll'
-import { ThemeToggle } from './ThemeToggle'
 
+/** Floating frosted pill that tightens once you start scrolling. */
 export function Nav() {
-  const active = useActiveSection(sectionIds as unknown as string[])
+  const active = useActiveSection(sectionIds)
   const [open, setOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
+  const [compact, setCompact] = useState(false)
 
   useLockBodyScroll(open)
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8)
+    const onScroll = () => setCompact(window.scrollY > 40)
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // Esc closes the mobile drawer.
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
@@ -33,70 +32,76 @@ export function Nav() {
     <>
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-100 focus:rounded-lg focus:bg-brand focus:px-4 focus:py-2 focus:font-medium focus:text-ink-0"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[300] focus:rounded-lg focus:bg-ice focus:px-4 focus:py-2 focus:font-medium focus:text-ink-0"
       >
         Skip to content
       </a>
 
       <header
-        className={`fixed inset-x-0 top-0 z-50 transition-shadow ${
-          scrolled ? 'glass border-b border-paper-3 dark:border-white/8' : ''
+        data-block-3d
+        className={`fixed inset-x-0 z-50 flex justify-center px-3 transition-[top] duration-500 ease-out-expo sm:px-5 ${
+          compact ? 'top-3' : 'top-5'
         }`}
       >
-        <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
-          <a href="#top" className="group flex items-center gap-2.5" aria-label={`${profile.name} — home`}>
-            <span className="grid size-8 place-items-center rounded-lg bg-linear-to-br from-brand to-accent font-mono text-sm font-bold text-ink-0">
-              K
-            </span>
-            <span className="hidden text-sm font-semibold text-slate-900 sm:block dark:text-white">
-              {profile.name}
+        <nav
+          aria-label="Primary"
+          className={`glass glass-blur flex w-full items-center justify-between rounded-2xl transition-all duration-500 ease-out-expo ${
+            compact ? 'h-12 max-w-4xl px-2.5' : 'h-14 max-w-6xl px-3.5'
+          }`}
+        >
+          <a href="#top" className="flex items-center gap-2.5 rounded-lg px-1.5 py-1" aria-label={`${profile.name} — home`}>
+            <span
+              className={`grid place-items-center rounded-lg border border-brand/30 bg-brand/[0.07] font-mono font-semibold tracking-wider text-ice transition-all duration-500 ${
+                compact ? 'h-7 px-2 text-[10px]' : 'h-8 px-2.5 text-[11px]'
+              }`}
+            >
+              {profile.initials}
             </span>
           </a>
 
+          <ul className="hidden items-center gap-0.5 lg:flex">
+            {sections.map((s) => (
+              <li key={s.id}>
+                <a
+                  href={`#${s.id}`}
+                  aria-current={active === s.id ? 'true' : undefined}
+                  className={`relative rounded-lg px-3 py-2 font-mono text-[10.5px] font-medium tracking-[0.18em] uppercase transition-colors ${
+                    active === s.id ? 'text-ice' : 'text-slate-400 hover:text-slate-100'
+                  }`}
+                >
+                  {active === s.id && (
+                    <motion.span
+                      layoutId="nav-active"
+                      className="absolute inset-0 rounded-lg bg-white/[0.06] ring-1 ring-white/[0.06]"
+                      transition={{ type: 'spring', stiffness: 420, damping: 36 }}
+                    />
+                  )}
+                  <span className="relative">{s.label}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+
           <div className="flex items-center gap-1.5">
-            <ul className="mr-2 hidden items-center gap-1 md:flex">
-              {sections.map((s) => (
-                <li key={s.id}>
-                  <a
-                    href={`#${s.id}`}
-                    aria-current={active === s.id ? 'true' : undefined}
-                    className={`relative rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                      active === s.id
-                        ? 'text-slate-900 dark:text-white'
-                        : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
-                    }`}
-                  >
-                    {s.label}
-                    {active === s.id && (
-                      <motion.span
-                        layoutId="nav-active"
-                        className="absolute inset-x-2.5 -bottom-px h-0.5 rounded-full bg-linear-to-r from-brand to-accent"
-                        transition={{ type: 'spring', stiffness: 420, damping: 34 }}
-                      />
-                    )}
-                  </a>
-                </li>
-              ))}
-            </ul>
-
-            <ThemeToggle />
-
             <a
               href={profile.resumePath}
               download
-              className="ml-1 hidden rounded-lg bg-linear-to-r from-brand to-accent px-4 py-2 text-sm font-semibold text-ink-0 transition-opacity hover:opacity-90 sm:block"
+              className={`hidden items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] font-mono text-[10.5px] font-semibold tracking-[0.16em] text-ice uppercase transition-all duration-500 hover:border-brand/50 hover:bg-brand/10 sm:inline-flex ${
+                compact ? 'h-8 px-3' : 'h-9 px-3.5'
+              }`}
             >
-              Resume
+              <Download className="size-3.5" aria-hidden="true" />
+              Download CV
             </a>
-
             <button
               type="button"
               onClick={() => setOpen((v) => !v)}
               aria-expanded={open}
+              aria-controls="mobile-menu"
               aria-label={open ? 'Close menu' : 'Open menu'}
-              className="grid size-9 place-items-center rounded-lg border border-paper-3 text-slate-600 md:hidden dark:border-white/10 dark:text-slate-300"
+              className="grid size-9 place-items-center rounded-lg border border-white/10 text-slate-200 lg:hidden"
             >
-              {open ? <X className="size-5" /> : <Menu className="size-5" />}
+              {open ? <X className="size-4.5" /> : <Menu className="size-4.5" />}
             </button>
           </div>
         </nav>
@@ -105,7 +110,9 @@ export function Nav() {
       <AnimatePresence>
         {open && (
           <motion.div
-            className="fixed inset-0 z-40 md:hidden"
+            id="mobile-menu"
+            data-block-3d
+            className="fixed inset-0 z-40 lg:hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -114,39 +121,38 @@ export function Nav() {
               type="button"
               aria-label="Close menu"
               onClick={() => setOpen(false)}
-              className="absolute inset-0 bg-ink-0/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-ink-0/70 backdrop-blur-sm"
             />
             <motion.ul
-              initial={{ y: -16, opacity: 0 }}
+              initial={{ y: -12, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -16, opacity: 0 }}
-              transition={{ duration: 0.22, ease: 'easeOut' }}
-              className="absolute inset-x-4 top-20 space-y-1 rounded-2xl border border-paper-3 bg-paper-1 p-3 shadow-2xl dark:border-white/10 dark:bg-ink-1"
+              exit={{ y: -12, opacity: 0 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="glass absolute inset-x-3 top-20 space-y-0.5 rounded-2xl bg-ink-1/95 p-2.5"
             >
               {sections.map((s) => (
                 <li key={s.id}>
                   <a
                     href={`#${s.id}`}
                     onClick={() => setOpen(false)}
-                    className={`flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium transition-colors ${
-                      active === s.id
-                        ? 'bg-paper-2 text-slate-900 dark:bg-white/6 dark:text-white'
-                        : 'text-slate-600 dark:text-slate-300'
+                    className={`flex items-center gap-4 rounded-xl px-4 py-3.5 font-mono text-xs tracking-[0.18em] uppercase ${
+                      active === s.id ? 'bg-white/[0.06] text-ice' : 'text-slate-300'
                     }`}
                   >
-                    <span className="font-mono text-xs text-brand">{s.index}</span>
+                    <span className="text-brand/70">{s.index}</span>
                     {s.label}
                   </a>
                 </li>
               ))}
-              <li className="pt-1">
+              <li className="pt-1.5">
                 <a
                   href={profile.resumePath}
                   download
                   onClick={() => setOpen(false)}
-                  className="block rounded-xl bg-linear-to-r from-brand to-accent px-4 py-3 text-center text-base font-semibold text-ink-0"
+                  className="btn-primary w-full justify-center"
                 >
-                  Download Resume
+                  <Download className="size-4" aria-hidden="true" />
+                  Download CV
                 </a>
               </li>
             </motion.ul>
